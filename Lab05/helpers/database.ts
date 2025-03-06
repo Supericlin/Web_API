@@ -35,6 +35,9 @@ export const run_insert = async (sql: any, values: any) => {
 
 export const run_update = async (sql: any, values: any) => {
     try {
+        console.log("Executing SQL:", sql);
+        console.log("With Values:", values);
+        
         const sequelize = new Sequelize(`postgres://${config.user}:${config.password}@${config.host}:${config.port}/${config.database}`);
         await sequelize.authenticate();
         let data = await sequelize.query(sql, {
@@ -44,7 +47,8 @@ export const run_update = async (sql: any, values: any) => {
         await sequelize.close();
         return data;
     } catch(err: any) {
-        console.error(err, sql, values);
+        console.error("Database update error:", err);
+        console.error("SQL Query:", sql, "Values:", values);
         throw 'Database update error';
     }
 }

@@ -48,6 +48,8 @@ const run_insert = (sql, values) => __awaiter(void 0, void 0, void 0, function* 
 exports.run_insert = run_insert;
 const run_update = (sql, values) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        console.log("Executing SQL:", sql);
+        console.log("With Values:", values);
         const sequelize = new sequelize_1.Sequelize(`postgres://${config_1.config.user}:${config_1.config.password}@${config_1.config.host}:${config_1.config.port}/${config_1.config.database}`);
         yield sequelize.authenticate();
         let data = yield sequelize.query(sql, {
@@ -58,7 +60,8 @@ const run_update = (sql, values) => __awaiter(void 0, void 0, void 0, function* 
         return data;
     }
     catch (err) {
-        console.error(err, sql, values);
+        console.error("Database update error:", err);
+        console.error("SQL Query:", sql, "Values:", values);
         throw 'Database update error';
     }
 });

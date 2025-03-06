@@ -15,13 +15,23 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -43,12 +53,6 @@ const verifyPassword = (user, password) => {
     return user.password === password;
 };
 koa_passport_1.default.use(new passport_http_1.BasicStrategy((username, password, done) => __awaiter(void 0, void 0, void 0, function* () {
-    // Replace this with your own authentication logic 
-    /***if (username === "admin" && password === "password") {
-        done(null, { username: "admin" });
-    } else {
-        done(null, false);
-    } ***/
     let result = [];
     try {
         result = yield users.findByUsername(username);
@@ -79,10 +83,27 @@ const basicAuth = (ctx, next) => __awaiter(void 0, void 0, void 0, function* () 
             message: 'you are not authorized'
         };
     }
-    else {
+    /***else {
         ctx.body = {
             message: 'you are passed'
         };
-    }
+    }***/
 });
 exports.basicAuth = basicAuth;
+/***export const basicAuth = async (ctx: RouterContext, next: any) => {
+    await passport.authenticate("basic", { session: false }, (err, user, info) => {
+        if (err || !user) {
+            ctx.status = 401;
+            ctx.body = { message: 'You are not authorized' };
+            return;
+        }
+        ctx.state.user = user.user;
+        //ctx.state.user = user.user; // Attach the authenticated user object to ctx.state
+        console.log("Authenticated User:", ctx.state.user); // Log the user object
+    })(ctx, next);
+    
+    //if (ctx.status !== 401) {
+    if (ctx.state.user) {
+        await next();
+    }
+};***/ 

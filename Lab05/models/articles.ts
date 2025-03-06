@@ -30,23 +30,34 @@ export const add = async(article: any) => {
 }
 
 export const update = async(id: number, article: any) => {
+    if (!Object.keys(article).length) {
+        // Return 400 Bad Request if no fields are provided to update
+        return { status: 400, message: "No fields to update" };
+    }
     let keys = Object.keys(article);
     let values = Object.values(article);
-    let sql = 'UPDATE articles set ';
+    let sql = 'UPDATE articles SET ';
     for (let i: number = 0; i < keys.length; i++) { 
-        // Update Table_name SET col1 = val1, col2 = val2, ... where condition
-        sql += `${keys[i]} = ?,`
+        sql += `${keys[i]} = ?,`;
     }
     sql = sql.slice(0,-1);
-    sql+= ` where id = ${id}`
+    sql += ` where id = ?`;
+
+    values.push(id);
+
+    console.log("Generated SQL:", sql); // Log the SQL query
+    console.log("Values:", values); // Log the values
+
     try {
         const status = await db.run_update(sql, values);
-        if(status[1] == 1)  // Return 1 if the ID found, else 404
+        if(status[1] == 1) { // Return 1 if the ID found, else 404
             return {status: 201};
-        else
-            return {status: 404};
+        } else {
+            return {status: 404, message: "Article not found" };
+        }
     } catch (err: any) {
-        return err;
+        console.error("Error updating article:", err);
+        return { status: 500, message: "Internal Server Error" };
     }
 }
 

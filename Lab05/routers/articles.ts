@@ -1,15 +1,10 @@
 import Router, {RouterContext} from "koa-router";
 import bodyParser from "koa-bodyparser";
 import * as articlesmodel from '../models/articles';
+import { basicAuth } from '../controllers/auth'
+import { restrictUpdate, restrictDelete, restrictCreate } from '../controllers/permissions';
 
 const router = new Router({prefix: '/api/v1/articles'});
-
-/***const articles = [
-    {title:'hello article', fullText:'some text here to fill the body'},
-    {title:'another article', fullText:'again here is some text here to fill'},
-    {title:'coventry university ', fullText:'some news about coventry university'},
-    //{title:'smart campus', fullText:'smart campus is coming to IVE'}
-];***/
 
 interface Article {
     title: string,
@@ -51,21 +46,35 @@ const createArticle = async (ctx: RouterContext, next: any) => {
 }
 
 const updateArticle = async (ctx: RouterContext, next: any) => {
-    const body = <Article> ctx.request.body;
-    let result = await articlesmodel.update(parseInt(ctx.params.id), body);
-    switch(result.status){
-        case 201:
-            ctx.status = 201;
-            ctx.body = { description: 'Data update succesfully'};
-            break;
-        case 404:
-            ctx.status = 404;
-            ctx.body = { description: 'ID not found and no data updated'};
-            break;
-        default:
-            ctx.status = 500;
-            ctx.body = { err: "Update data failed"};
-            break;
+    try {
+        console.log("Request Body:", ctx.request.body);
+        const body = <Article>ctx.request.body;
+        const id = parseInt(ctx.params.id);
+
+        const result = await articlesmodel.update(id, body);
+
+        switch (result.status) {
+            case 201:
+                ctx.status = 201;
+                ctx.body = { description: 'Data updated successfully' };
+                break;
+            case 404:
+                ctx.status = 404;
+                ctx.body = { description: result.message };
+                break;
+            case 400:
+                ctx.status = 400;
+                ctx.body = { description: result.message };
+                break;
+            default:
+                ctx.status = 500;
+                ctx.body = { description: result.message };
+                break;
+        }
+    } catch (err) {
+        console.error("Error in updateArticle:", err);
+        ctx.status = 500;
+        ctx.body = { description: "Internal Server Error" };
     }
     await next();
 }
@@ -79,8 +88,8 @@ const deleteArticle = async (ctx: RouterContext, next: any) => {
 
 router.get('/', getAll);
 router.get('/:id([0-9]{1,})', getById);
-router.post('/', bodyParser(), createArticle);
-router.put('/:id([0-9]{1,})', bodyParser(), updateArticle);
-router.delete('/:id([0-9]{1,})', deleteArticle);
+router.post('/', basicAuth, restrictCreate, bodyParser(), createArticle);
+router.put('/:id([0-9]{1,})', restrictUpdate, basicAuth, bodyParser(), updateArticle);
+router.delete('/:id([0-9]{1,})', basicAuth, restrictDelete, deleteArticle);
 
 export { router };

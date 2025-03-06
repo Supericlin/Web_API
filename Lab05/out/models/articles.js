@@ -15,13 +15,23 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -67,24 +77,33 @@ const add = (article) => __awaiter(void 0, void 0, void 0, function* () {
 });
 exports.add = add;
 const update = (id, article) => __awaiter(void 0, void 0, void 0, function* () {
+    if (!Object.keys(article).length) {
+        // Return 400 Bad Request if no fields are provided to update
+        return { status: 400, message: "No fields to update" };
+    }
     let keys = Object.keys(article);
     let values = Object.values(article);
-    let sql = 'UPDATE articles set ';
+    let sql = 'UPDATE articles SET ';
     for (let i = 0; i < keys.length; i++) {
-        // Update Table_name SET col1 = val1, col2 = val2, ... where condition
         sql += `${keys[i]} = ?,`;
     }
     sql = sql.slice(0, -1);
-    sql += ` where id = ${id}`;
+    sql += ` where id = ?`;
+    values.push(id);
+    console.log("Generated SQL:", sql); // Log the SQL query
+    console.log("Values:", values); // Log the values
     try {
         const status = yield db.run_update(sql, values);
-        if (status[1] == 1) // Return 1 if the ID found, else 404
+        if (status[1] == 1) { // Return 1 if the ID found, else 404
             return { status: 201 };
-        else
-            return { status: 404 };
+        }
+        else {
+            return { status: 404, message: "Article not found" };
+        }
     }
     catch (err) {
-        return err;
+        console.error("Error updating article:", err);
+        return { status: 500, message: "Internal Server Error" };
     }
 });
 exports.update = update;

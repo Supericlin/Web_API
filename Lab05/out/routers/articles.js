@@ -15,13 +15,23 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -39,6 +49,8 @@ exports.router = void 0;
 const koa_router_1 = __importDefault(require("koa-router"));
 const koa_bodyparser_1 = __importDefault(require("koa-bodyparser"));
 const articlesmodel = __importStar(require("../models/articles"));
+const auth_1 = require("../controllers/auth");
+const permissions_1 = require("../controllers/permissions");
 const router = new koa_router_1.default({ prefix: '/api/v1/articles' });
 exports.router = router;
 const getAll = (ctx, next) => __awaiter(void 0, void 0, void 0, function* () {
@@ -76,21 +88,34 @@ const createArticle = (ctx, next) => __awaiter(void 0, void 0, void 0, function*
     yield next();
 });
 const updateArticle = (ctx, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const body = ctx.request.body;
-    let result = yield articlesmodel.update(parseInt(ctx.params.id), body);
-    switch (result.status) {
-        case 201:
-            ctx.status = 201;
-            ctx.body = { description: 'Data update succesfully' };
-            break;
-        case 404:
-            ctx.status = 404;
-            ctx.body = { description: 'ID not found and no data updated' };
-            break;
-        default:
-            ctx.status = 500;
-            ctx.body = { err: "Update data failed" };
-            break;
+    try {
+        console.log("Request Body:", ctx.request.body);
+        const body = ctx.request.body;
+        const id = parseInt(ctx.params.id);
+        const result = yield articlesmodel.update(id, body);
+        switch (result.status) {
+            case 201:
+                ctx.status = 201;
+                ctx.body = { description: 'Data updated successfully' };
+                break;
+            case 404:
+                ctx.status = 404;
+                ctx.body = { description: result.message };
+                break;
+            case 400:
+                ctx.status = 400;
+                ctx.body = { description: result.message };
+                break;
+            default:
+                ctx.status = 500;
+                ctx.body = { description: result.message };
+                break;
+        }
+    }
+    catch (err) {
+        console.error("Error in updateArticle:", err);
+        ctx.status = 500;
+        ctx.body = { description: "Internal Server Error" };
     }
     yield next();
 });
@@ -102,6 +127,6 @@ const deleteArticle = (ctx, next) => __awaiter(void 0, void 0, void 0, function*
 });
 router.get('/', getAll);
 router.get('/:id([0-9]{1,})', getById);
-router.post('/', (0, koa_bodyparser_1.default)(), createArticle);
-router.put('/:id([0-9]{1,})', (0, koa_bodyparser_1.default)(), updateArticle);
-router.delete('/:id([0-9]{1,})', deleteArticle);
+router.post('/', auth_1.basicAuth, permissions_1.restrictCreate, (0, koa_bodyparser_1.default)(), createArticle);
+router.put('/:id([0-9]{1,})', permissions_1.restrictUpdate, auth_1.basicAuth, (0, koa_bodyparser_1.default)(), updateArticle);
+router.delete('/:id([0-9]{1,})', auth_1.basicAuth, permissions_1.restrictDelete, deleteArticle);

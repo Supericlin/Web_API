@@ -9,12 +9,6 @@ const verifyPassword = (user: any, password: string) => {
 } 
 
 passport.use(new BasicStrategy(async (username, password, done) => { 
-    // Replace this with your own authentication logic 
-    /***if (username === "admin" && password === "password") { 
-        done(null, { username: "admin" }); 
-    } else { 
-        done(null, false); 
-    } ***/
     let result: any[] = [];   
     try {     
         result = await users.findByUsername(username);   
@@ -43,9 +37,28 @@ export const basicAuth = async (ctx: RouterContext, next: any) => {
         ctx.body = { 
             message: 'you are not authorized' 
         }; 
-    } else { 
+    } 
+    /***else { 
         ctx.body = { 
             message: 'you are passed' 
         }; 
-    } 
-}  
+    }***/
+};
+
+/***export const basicAuth = async (ctx: RouterContext, next: any) => {
+    await passport.authenticate("basic", { session: false }, (err, user, info) => {
+        if (err || !user) {
+            ctx.status = 401;
+            ctx.body = { message: 'You are not authorized' };
+            return;
+        }
+        ctx.state.user = user.user;
+        //ctx.state.user = user.user; // Attach the authenticated user object to ctx.state
+        console.log("Authenticated User:", ctx.state.user); // Log the user object
+    })(ctx, next);
+    
+    //if (ctx.status !== 401) {
+    if (ctx.state.user) {
+        await next();
+    }
+};***/
