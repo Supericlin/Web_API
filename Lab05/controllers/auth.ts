@@ -30,22 +30,21 @@ passport.use(new BasicStrategy(async (username, password, done) => {
     } 
 }));
 
-export const basicAuth = async (ctx: RouterContext, next: any) => { 
+/***export const basicAuth = async (ctx: RouterContext, next: any) => { 
     await passport.authenticate("basic", { session: false })(ctx, next); 
     if(ctx.status == 401) 
     { 
         ctx.body = { 
             message: 'you are not authorized' 
         }; 
-    } 
-    /***else { 
+    } else { 
         ctx.body = { 
             message: 'you are passed' 
         }; 
-    }***/
-};
+    }
+};***/
 
-/***export const basicAuth = async (ctx: RouterContext, next: any) => {
+export const basicAuth = async (ctx: RouterContext, next: any) => {
     await passport.authenticate("basic", { session: false }, (err, user, info) => {
         if (err || !user) {
             ctx.status = 401;
@@ -61,4 +60,4 @@ export const basicAuth = async (ctx: RouterContext, next: any) => {
     if (ctx.state.user) {
         await next();
     }
-};***/
+};

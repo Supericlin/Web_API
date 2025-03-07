@@ -76,22 +76,21 @@ koa_passport_1.default.use(new passport_http_1.BasicStrategy((username, password
         done(null, false);
     }
 })));
-const basicAuth = (ctx, next) => __awaiter(void 0, void 0, void 0, function* () {
-    yield koa_passport_1.default.authenticate("basic", { session: false })(ctx, next);
-    if (ctx.status == 401) {
+/***export const basicAuth = async (ctx: RouterContext, next: any) => {
+    await passport.authenticate("basic", { session: false })(ctx, next);
+    if(ctx.status == 401)
+    {
         ctx.body = {
             message: 'you are not authorized'
         };
-    }
-    /***else {
+    } else {
         ctx.body = {
             message: 'you are passed'
         };
-    }***/
-});
-exports.basicAuth = basicAuth;
-/***export const basicAuth = async (ctx: RouterContext, next: any) => {
-    await passport.authenticate("basic", { session: false }, (err, user, info) => {
+    }
+};***/
+const basicAuth = (ctx, next) => __awaiter(void 0, void 0, void 0, function* () {
+    yield koa_passport_1.default.authenticate("basic", { session: false }, (err, user, info) => {
         if (err || !user) {
             ctx.status = 401;
             ctx.body = { message: 'You are not authorized' };
@@ -101,9 +100,9 @@ exports.basicAuth = basicAuth;
         //ctx.state.user = user.user; // Attach the authenticated user object to ctx.state
         console.log("Authenticated User:", ctx.state.user); // Log the user object
     })(ctx, next);
-    
     //if (ctx.status !== 401) {
     if (ctx.state.user) {
-        await next();
+        yield next();
     }
-};***/ 
+});
+exports.basicAuth = basicAuth;

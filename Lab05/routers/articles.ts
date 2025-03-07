@@ -89,7 +89,7 @@ const deleteArticle = async (ctx: RouterContext, next: any) => {
 router.get('/', getAll);
 router.get('/:id([0-9]{1,})', getById);
 router.post('/', basicAuth, restrictCreate, bodyParser(), createArticle);
-router.put('/:id([0-9]{1,})', restrictUpdate, basicAuth, bodyParser(), updateArticle);
+router.put('/:id([0-9]{1,})', basicAuth, restrictUpdate, bodyParser(), updateArticle);
 router.delete('/:id([0-9]{1,})', basicAuth, restrictDelete, deleteArticle);
 
 export { router };

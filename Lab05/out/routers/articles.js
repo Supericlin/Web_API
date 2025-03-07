@@ -128,5 +128,5 @@ const deleteArticle = (ctx, next) => __awaiter(void 0, void 0, void 0, function*
 router.get('/', getAll);
 router.get('/:id([0-9]{1,})', getById);
 router.post('/', auth_1.basicAuth, permissions_1.restrictCreate, (0, koa_bodyparser_1.default)(), createArticle);
-router.put('/:id([0-9]{1,})', permissions_1.restrictUpdate, auth_1.basicAuth, (0, koa_bodyparser_1.default)(), updateArticle);
+router.put('/:id([0-9]{1,})', auth_1.basicAuth, permissions_1.restrictUpdate, (0, koa_bodyparser_1.default)(), updateArticle);
 router.delete('/:id([0-9]{1,})', auth_1.basicAuth, permissions_1.restrictDelete, deleteArticle);
